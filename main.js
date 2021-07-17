@@ -20,14 +20,40 @@ var ball = {
     dx:3,
     dy:3
 }
+GameStatus = "";
+noseX = "";
+noseY = "";
 
 function setup(){
   var canvas =  createCanvas(700,600);
+    canvas.parent('canvas');
+
+    video = createCapture(VIDEO);
+    video.size(800,400);
+    video.parent('game_console');
+ 
+    poseNet = ml5.poseNet(video,modelLoaded);
+    poseNet.on('pose', gotPoses);
+}
+function modelLoaded()
+{
+	console.log("Model Loaded!")
 }
 
+function gotPoses(results)
+{
+  if(results.length > 0)
+  {
+	console.log(results);
+    noseX = results[0].pose.nose.x;
+    noseY = results[0].pose.nose.y;
+    console.log("noseX = " + noseX +", noseY = " + noseY);
+  }
+}
 
 function draw(){
-
+if(GameStatus == "start")
+{
  background(0); 
 
  fill("black");
@@ -45,14 +71,16 @@ function draw(){
    fill(250,0,0);
     stroke(0,0,250);
     strokeWeight(0.5);
-   paddle1Y = mouseY; 
-   rect(paddle1X,paddle1Y,paddle1,paddle1Height,100);
+   paddle1Y = noseY; 
+   rect(paddle1X,paddle1Y,paddle1,paddle1Height);
    
    
     //pc computer paddle
     fill("#FFA500");
     stroke("#FFA500");
-   var paddle2y =ball.y-paddle2Height/2;  rect(paddle2Y,paddle2y,paddle2,paddle2Height,100);
+   var paddle2y =ball.y-paddle2Height/2;  
+   rect(paddle2Y,paddle2y,paddle2,paddle2Height);
+
     
     //function midline call
     midline();
@@ -65,13 +93,21 @@ function draw(){
    
    //function move call which in very important
     move();
+    circle(noseX,noseY, 20); 
+    
+}
 }
 
+function startGame()
+{
+  GameStatus = "start";
+  document.getElementById("status").innerHTML = "Game is loading";
+}
 
 
 //function reset when ball does notcame in the contact of padde
 function reset(){
-   ball.x = width/2+100,
+   ball.x = width/2+100;
    ball.y = height/2+100;
    ball.dx=3;
    ball.dy =3;
@@ -108,7 +144,7 @@ function move(){
    fill(50,350,0);
    stroke(255,0,0);
    strokeWeight(0.5);
-   ellipse(ball.x,ball.y,ball.r,20)
+   ellipse(ball.x,ball.y,ball.r,20);
    ball.x = ball.x + ball.dx;
    ball.y = ball.y + ball.dy;
    if(ball.x+ball.r>width-ball.r/2){
@@ -162,3 +198,4 @@ function paddleInCanvas(){
     mouseY =0;
   }  
 }
+
